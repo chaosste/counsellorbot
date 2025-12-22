@@ -3,7 +3,14 @@ export enum View {
   CHAT = 'CHAT',
   VOICE = 'VOICE',
   NOTES = 'NOTES',
-  HOME = 'HOME'
+  HOME = 'HOME',
+  SETTINGS = 'SETTINGS'
+}
+
+export interface VoiceSettings {
+  voiceName: string;
+  gender: 'feminine' | 'masculine' | 'neutral';
+  accent: 'US' | 'UK';
 }
 
 export interface ChatMessage {

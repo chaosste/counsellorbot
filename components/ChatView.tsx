@@ -55,7 +55,8 @@ const ChatView: React.FC<ChatViewProps> = ({ onAddNote }) => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Fix: Use API_KEY directly from environment variables as required
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const chat = ai.chats.create({
         model: 'gemini-3-pro-preview',
         config: {

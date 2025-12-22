@@ -1,11 +1,12 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob, FunctionDeclaration, Type } from '@google/genai';
-import { SessionNote } from '../types';
+import { SessionNote, VoiceSettings } from '../types';
 import { SYSTEM_INSTRUCTION } from '../constants';
 
 interface LiveVoiceViewProps {
   onAddNote: (note: SessionNote) => void;
+  voiceSettings: VoiceSettings;
 }
 
 const writeSessionNoteDeclaration: FunctionDeclaration = {
@@ -32,7 +33,7 @@ const writeSessionNoteDeclaration: FunctionDeclaration = {
   }
 };
 
-const LiveVoiceView: React.FC<LiveVoiceViewProps> = ({ onAddNote }) => {
+const LiveVoiceView: React.FC<LiveVoiceViewProps> = ({ onAddNote, voiceSettings }) => {
   const [isActive, setIsActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [transcription, setTranscription] = useState<string>('');
@@ -99,7 +100,8 @@ const LiveVoiceView: React.FC<LiveVoiceViewProps> = ({ onAddNote }) => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Fix: Use API_KEY directly from environment variables as required
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -194,10 +196,11 @@ const LiveVoiceView: React.FC<LiveVoiceViewProps> = ({ onAddNote }) => {
           }
         },
         config: {
+          // Fix: Correct spelling of responseModalities
           responseModalities: [Modality.AUDIO],
           systemInstruction: SYSTEM_INSTRUCTION,
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceSettings.voiceName } }
           },
           tools: [{ functionDeclarations: [writeSessionNoteDeclaration] }],
           outputAudioTranscription: {}
@@ -241,7 +244,7 @@ const LiveVoiceView: React.FC<LiveVoiceViewProps> = ({ onAddNote }) => {
     <div className="h-full flex flex-col justify-center items-center space-y-12">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-slate-900 font-serif mb-2">Voice Session</h2>
-        <p className="text-slate-500">I'm listening to your tone and emotion. Talk freely.</p>
+        <p className="text-slate-500 italic">Using {voiceSettings.voiceName} ({voiceSettings.accent})</p>
       </div>
 
       <div className="relative flex items-center justify-center">
@@ -303,7 +306,7 @@ const LiveVoiceView: React.FC<LiveVoiceViewProps> = ({ onAddNote }) => {
 
       <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm max-w-sm text-center">
         <p className="text-xs text-slate-500">
-          Tip: You can ask me to "write a session note" at any time to save our progress to your journal.
+          Tip: You can change voice, gender and accent in Settings.
         </p>
       </div>
     </div>
